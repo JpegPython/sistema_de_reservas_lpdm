@@ -19,7 +19,7 @@ class _CadastroState extends State<Cadastro> {
   TextEditingController _senhaController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   void criarConta() {
-    Usuario usuario = Usuario(nome: _usuarioController.text, email: _emailController.text, senha: _senhaController.text);
+    Usuario usuario = Usuario(name: _usuarioController.text, email: _emailController.text, password: _senhaController.text);
     Usuarioservice.criarUsuario(Usuario.fromUsuarioToJson(usuario));
 
     Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));

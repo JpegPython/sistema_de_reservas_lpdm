@@ -1,25 +1,25 @@
 class Usuario {
   int? id;
-  String nome;
+  String name;
   String email;
-  String senha;
-  Usuario({this.id, required this.nome, required this.email, required this.senha});
+  String password;
+  Usuario({this.id, required this.name, required this.email, required this.password});
 
   static Usuario fromJsonToUsuario(Map<String, dynamic> json) {
     return Usuario(
       id: json['id'],
-      nome : json['nome'],
+      name : json['name'],
       email: json['email'],
-      senha: json['senha']
+      password: json['password']
     );
   } 
 
   static Map<String, dynamic> fromUsuarioToJson(Usuario usuario) {
     return {
       'id': usuario.id,
-      'nome': usuario.nome,
+      'name': usuario.name,
       'email': usuario.email,
-      'senha': usuario.senha
+      'password': usuario.password
     };
   }
 }
