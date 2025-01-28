@@ -53,17 +53,25 @@ class _LoginState extends State<Login> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-              if(_usuarioController.text.isEmpty || _senhaController.text.isEmpty) {
-                return showToastMessage("Nome ou senha vazios!");
-              } else {
-                Usuario? usuario = Usuarioservice.usuarioExiste(_usuarioController.text, _senhaController.text);
-                if(usuario != null) {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => Home(usuario: usuario)));
+              onPressed: () async {
+                if (_usuarioController.text.isEmpty || _senhaController.text.isEmpty) {
+                  return showToastMessage("Nome ou senha vazios!");
                 } else {
-                  return showToastMessage("Usuário ou senha incorretos!");
+                  Usuario? usuario = await Usuarioservice.usuarioExiste(
+                    _usuarioController.text,
+                    _senhaController.text,
+                  );
+                  if (usuario != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Home(usuario: usuario),
+                      ),
+                    );
+                  } else {
+                    return showToastMessage("Usuário ou senha incorretos!");
+                  }
                 }
-              }
               },
               child: Text('Logar'),
             ),

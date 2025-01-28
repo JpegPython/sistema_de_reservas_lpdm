@@ -7,8 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseService {
-  static int _version = 1;
-  static String _name = 'database.db';
+  static final int _version = 1;
+  static final String _name = 'database.db';
 
   static Future<Database> getDB() async {
 
