@@ -4,8 +4,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io' as io;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 class DatabaseService {
   static final int _version = 1;
   static final String _name = 'database.db';
