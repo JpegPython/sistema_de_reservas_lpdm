@@ -3,9 +3,9 @@ import 'package:booking_app/servicos/dataBase.dart';
 
 class Propriedadeservice {
 
-  static void criarPropriedade(Map<String, dynamic> prorpiedade) async {
+  static Future<int> criarPropriedade(Map<String, dynamic> prorpiedade) async {
     final db = await DatabaseService.getDB();
-    await db.insert('property', prorpiedade);
+    return await db.insert('property', prorpiedade);
   }
 
   static Future<List<Propriedade>> buscarPropriedadesDeUsuario(int user_id) async{

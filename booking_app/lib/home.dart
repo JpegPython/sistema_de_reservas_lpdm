@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:booking_app/modelos/endereco.dart';
+import 'package:booking_app/modelos/image.dart';
 import 'package:booking_app/modelos/propriedade.dart';
 import 'package:booking_app/modelos/usuario.dart';
 import 'package:booking_app/servicos/cepService.dart';
 import 'package:booking_app/servicos/enderecoService.dart';
+import 'package:booking_app/servicos/imagemService.dart';
 import 'package:booking_app/servicos/propriedadeService.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -19,15 +21,15 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<Propriedade> propriedades = [];
-  TextEditingController titleController = new TextEditingController();
-  TextEditingController descriptionController = new TextEditingController();
-  TextEditingController numberController =  new TextEditingController();
-  TextEditingController complementController =  new TextEditingController();
-  TextEditingController priceController =  new TextEditingController();
-  TextEditingController maxguestController =  new TextEditingController();
-  TextEditingController cepController =  new TextEditingController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController numberController =  TextEditingController();
+  TextEditingController complementController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController maxguestController = TextEditingController();
+  TextEditingController cepController = TextEditingController();
   File? _image;
-
+//TODO: falta ver a questao da imagem, deletar a propriedade e editar ela
   Card criarCard(Propriedade propriedade) {
     return Card(
       elevation: 4.0,
@@ -37,7 +39,7 @@ class _HomeState extends State<Home> {
         children: [
           Image.network(
             propriedade.thumbnail,
-            width: double.infinity,
+            width: 150,
             height: 150.0,
             fit: BoxFit.cover,
           ),
@@ -80,7 +82,7 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     Text(
-                      'Máx. ${propriedade.max_guest} hóspedes',
+                      'Máximo ${propriedade.max_guest} hóspedes',
                       style: const TextStyle(
                         fontSize: 16.0,
                         color: Colors.grey,
@@ -112,11 +114,17 @@ Future<void> pickImage() async {
   
 _salvarPropriedade() async {
   Endereco enderecoViaApi = await Cepservice.buscarCep(cepController.text);
+  //Verifica se precisa salvar no banco de dados ou já está lá
   Endereco enderecoBancoDeDados = await Enderecoservice.precisaSalvarEnderecoNoBanco(enderecoViaApi);
 
+  //Cria a propriedade e salva no banco de dados
   Propriedade propriedade = Propriedade(address_id: enderecoBancoDeDados.id!, user_id: widget.usuario.id!, title: titleController.text, description: descriptionController.text, price: double.parse(priceController.text), 
-                max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: 'text');
-  Propriedadeservice.criarPropriedade(Propriedade.fromPropriedadeToJson(propriedade));
+                max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _image!.path);
+  propriedade.id = await Propriedadeservice.criarPropriedade(Propriedade.fromPropriedadeToJson(propriedade));
+  
+  //Cria a imagem e salva no banco de dados
+  Imagem imagem = Imagem(path: _image!.path, property_id: propriedade.id!);
+  Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
 
   setState(() {
     propriedades.add(propriedade);
@@ -124,7 +132,6 @@ _salvarPropriedade() async {
 }
 void salvarOuAtualizarModal(int operation, {int index = -1}) {
   String operationStr = "Adicionar";
-  
   
   if (operation == 1) {
     operationStr = "Atualizar";
@@ -215,6 +222,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
     },
   );
   }
+
   @override
   void initState() {
     super.initState();
@@ -225,6 +233,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
         });
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
