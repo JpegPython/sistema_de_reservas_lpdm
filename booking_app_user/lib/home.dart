@@ -122,9 +122,7 @@ class _HomeState extends State<Home> {
                 child: Icon(Icons.person),
               ),
               onSelected: (String result) {
-                if (result == 'minhas_propriedades') {
-
-                } else {
+                if (result != 'minhas_propriedades') {
                   Navigator.pop(context);
                 }
               },

@@ -238,7 +238,34 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Home Page'),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Propriedades'),
+              PopupMenuButton<String>(
+                icon: const CircleAvatar(
+                  child: Icon(Icons.person),
+                ),
+                onSelected: (String result) {
+                  if (result != 'minhas_propriedades') {
+                    Navigator.pop(context);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'minhas_propriedades',
+                      child: Text('Minhas Propriedades'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'deslogar',
+                      child: Text('Deslogar'),
+                    ),
+                  ];
+                },
+              ),
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
