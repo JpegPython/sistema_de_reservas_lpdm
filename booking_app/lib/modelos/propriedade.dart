@@ -4,7 +4,7 @@ class Propriedade {
   int address_id; 
   String title;
   String description;
-  String number;
+  int number;
   String complement;
   double price; 
   int max_guest;
