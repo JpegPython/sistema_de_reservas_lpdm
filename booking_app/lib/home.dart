@@ -30,6 +30,7 @@ class _HomeState extends State<Home> {
   TextEditingController maxguestController = TextEditingController();
   TextEditingController cepController = TextEditingController();
   File? _image;
+  List<File>? _images;
 //TODO: falta ver editar a propriedade
   Widget criarCard(Propriedade propriedade, int index) {
     return FutureBuilder<Endereco?>(
@@ -175,19 +176,17 @@ class _HomeState extends State<Home> {
     );
   }
 
-Future<void> pickImage() async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles(
-    type: FileType.image, // Permite selecionar apenas imagens
-  );
+  Future<void> pickImages() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image, // Permite selecionar apenas imagens
+      allowMultiple: true,  // Permite selecionar múltiplas imagens
+    );
 
-  if (result != null) {
-    PlatformFile file = result.files.first;
-    _image = File(file.path!);
-    print("Imagem selecionada: ${_image!.path}");
-
-  } 
-
-}
+    if (result != null) {
+      _images = result.files.map((file) => File(file.path!)).toList();
+      _image = _images!.first;
+    }
+  }
   
 _salvarPropriedade() async {
   Endereco enderecoViaApi = await Cepservice.buscarCep(cepController.text);
@@ -200,11 +199,21 @@ _salvarPropriedade() async {
   propriedade.id = await Propriedadeservice.criarPropriedade(Propriedade.fromPropriedadeToJson(propriedade));
   
   //Cria a imagem e salva no banco de dados
-  Imagem imagem = Imagem(path: _image!.path, property_id: propriedade.id!);
-  Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
+  _images?.forEach((image) {
+    Imagem imagem = Imagem(path: image.path, property_id: propriedade.id!);
+    Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
+  });
 
   setState(() {
     propriedades.add(propriedade);
+    titleController.clear();
+    descriptionController.clear();
+    priceController.clear();
+    maxguestController.clear();
+    numberController.clear();
+    complementController.clear();
+    cepController.clear();
+    _image = null;
   });
 }
 void salvarOuAtualizarModal(int operation, {int index = -1}) {
@@ -266,10 +275,10 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
-                      await pickImage();
+                      await pickImages();
                       setState(() {}); // Reconstruir o conteúdo do AlertDialog
                     },
-                    child: Text("Anexar Imagem"),
+                    child: Text("Anexar Imagens"),
                   ),
                 ],
               ),
@@ -288,6 +297,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                   } else if (operation == 1) {
                     //_atualizarPropriedade(index);
                   }
+
                   Navigator.pop(context);
                 },
                 child: Text(operationStr),
