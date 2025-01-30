@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:booking_app/modelos/endereco.dart';
@@ -29,79 +30,137 @@ class _HomeState extends State<Home> {
   TextEditingController maxguestController = TextEditingController();
   TextEditingController cepController = TextEditingController();
   File? _image;
-//TODO: falta ver a questao da imagem, deletar a propriedade e editar ela
-  Card criarCard(Propriedade propriedade) {
-    return Card(
-      elevation: 4.0,
-      margin: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: 
-        [
-          propriedade.thumbnail.startsWith('http')
-          ? Image.network(
+//TODO: falta ver editar a propriedade
+  Widget criarCard(Propriedade propriedade, int index) {
+    return Dismissible(
+      key: Key(propriedade.id.toString()),
+      onDismissed: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          // TODO: Editar
+        } else if (direction == DismissDirection.endToStart) {
+          // Excluir
+          Propriedade lastRemoved = propriedade;
+          int removedIndex = index;
+          setState(() {
+            propriedades.removeAt(index);
+          });
+
+          bool isUndone = false;
+
+          final snackBar = SnackBar(
+            content: Text("Propriedade excluída!"),
+            duration: Duration(seconds: 5),
+            action: SnackBarAction(
+              label: "Desfazer",
+              onPressed: () {
+                isUndone = true;
+                setState(() {
+                  propriedades.insert(removedIndex, lastRemoved);
+                });
+              },
+            ),
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+          Timer(Duration(seconds: 5), () {
+            if (!isUndone) {
+              Propriedadeservice.deletarPropriedade(lastRemoved.id!).then((_) {
+                Propriedadeservice.buscarPropriedadesDeUsuario(widget.usuario.id!).then((p) {
+                  setState(() {
+                    propriedades = p;
+                  });
+                });
+              });
+            }
+          });
+        }
+      },
+      background: Container(
+          color: Colors.green,
+          padding: EdgeInsets.all(14),
+          margin: EdgeInsets.only(top: 7, bottom: 7),
+          alignment: Alignment.centerLeft,
+          child: Icon(Icons.edit, color: Colors.white, size: 37),
+        ),
+      secondaryBackground: Container(
+          color: Colors.red,
+          padding: EdgeInsets.all(14),
+          margin: EdgeInsets.only(top: 7, bottom: 7),
+          alignment: Alignment.centerRight,
+          child: Icon(Icons.delete, color: Colors.white, size: 37),
+        ),
+      child: Card(
+        elevation: 4.0,
+        margin: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            propriedade.thumbnail.startsWith('http')
+                ? Image.network(
               propriedade.thumbnail,
               width: double.infinity,
               height: 150.0,
               fit: BoxFit.cover,
             )
-          : Image.file(
+                : Image.file(
               File(propriedade.thumbnail),
               width: double.infinity,
               height: 150.0,
               fit: BoxFit.cover,
-              ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  propriedade.title,
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8.0),
-                Text(
-                  propriedade.description,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8.0),
-                Text(
-                  '${propriedade.number}, ${propriedade.complement}',
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                  ),
-                ),
-                const SizedBox(height: 8.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'R\$ ${propriedade.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Máximo ${propriedade.max_guest} hóspedes',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    propriedade.title,
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    propriedade.description,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    '${propriedade.number}, ${propriedade.complement}',
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'R\$ ${propriedade.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Máximo ${propriedade.max_guest} hóspedes',
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -221,7 +280,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                   }
                   Navigator.pop(context);
                 },
-                child: Text("$operationStr"),
+                child: Text(operationStr),
               ),
             ],
           );
@@ -286,7 +345,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
               child: ListView.builder(
                 itemCount: propriedades.length,
                 itemBuilder: (context, index) {
-                  return criarCard(propriedades[index]);
+                  return criarCard(propriedades[index], index);
                 },
               ),
             ),
