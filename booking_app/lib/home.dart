@@ -36,13 +36,21 @@ class _HomeState extends State<Home> {
       margin: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.network(
-            propriedade.thumbnail,
-            width: 150,
-            height: 150.0,
-            fit: BoxFit.cover,
-          ),
+        children: 
+        [
+          propriedade.thumbnail.startsWith('http')
+          ? Image.network(
+              propriedade.thumbnail,
+              width: double.infinity,
+              height: 150.0,
+              fit: BoxFit.cover,
+            )
+          : Image.file(
+              File(propriedade.thumbnail),
+              width: double.infinity,
+              height: 150.0,
+              fit: BoxFit.cover,
+              ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
