@@ -46,6 +46,14 @@ class _HomeState extends State<Home> {
           onDismissed: (direction) async {
             if (direction == DismissDirection.startToEnd) {
               // TODO: Editar
+              setState(() {
+
+              });
+              _images = await Imagemservice.pegarImagensPeloIdPropriedade(propriedades[index].id!);
+              cepController.text = endereco.cep.toString();
+
+              salvarOuAtualizarModal(1, index: index);
+
             } else if (direction == DismissDirection.endToStart) {
               // Excluir
               Propriedade lastRemoved = propriedade;
@@ -216,12 +224,49 @@ _salvarPropriedade() async {
     _image = null;
   });
 }
+
+  _atualizarPropriedade(index) async {
+    Endereco enderecoViaApi = await Cepservice.buscarCep(cepController.text);
+    //Verifica se precisa salvar no banco de dados ou já está lá
+    Endereco enderecoBancoDeDados = await Enderecoservice.precisaSalvarEnderecoNoBanco(enderecoViaApi);
+
+    //Cria a propriedade e salva no banco de dados
+    Propriedade propriedade = Propriedade(id: propriedades[index].id, address_id: enderecoBancoDeDados.id!, user_id: widget.usuario.id!, title: titleController.text, description: descriptionController.text, price: double.parse(priceController.text),
+        max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _image!.path);
+    await Propriedadeservice.atualizarPropriedade(propriedade);
+
+    //TODO: Rever isso das imagens no atualizar
+    await Imagemservice.apagarImagens(propriedade.id!);
+    _images?.forEach((image) {
+      Imagem imagem = Imagem(path: image.path, property_id: propriedade.id!);
+      Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
+    });
+
+    setState(() {
+      propriedades[index] = propriedade;
+      titleController.clear();
+      descriptionController.clear();
+      priceController.clear();
+      maxguestController.clear();
+      numberController.clear();
+      complementController.clear();
+      cepController.clear();
+      _image = null;
+    });
+  }
+
 void salvarOuAtualizarModal(int operation, {int index = -1}) {
   String operationStr = "Adicionar";
   
   if (operation == 1) {
     operationStr = "Atualizar";
-    //taskController.text = taskList[index]["title"];
+    titleController.text = propriedades[index].title;
+    descriptionController.text = propriedades[index].description;
+    priceController.text = propriedades[index].price.toString();
+    maxguestController.text = propriedades[index].max_guest.toString();
+    numberController.text = propriedades[index].number.toString();
+    complementController.text = propriedades[index].complement;
+    _image = File(propriedades[index].thumbnail);
   }
 
   showDialog(
@@ -295,7 +340,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                   if (operation == 0) {
                     _salvarPropriedade();
                   } else if (operation == 1) {
-                    //_atualizarPropriedade(index);
+                    _atualizarPropriedade(index);
                   }
 
                   Navigator.pop(context);
@@ -316,7 +361,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
     Propriedadeservice.buscarPropriedadesDeUsuario(widget.usuario.id!).then((p) {
         propriedades = p;
         setState(() {
-          
+
         });
     });
   }

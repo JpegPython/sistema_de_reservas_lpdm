@@ -2,9 +2,9 @@ import 'package:booking_app/modelos/propriedade.dart';
 import 'package:booking_app/servicos/dataBase.dart';
 
 class Propriedadeservice {
-  static Future<int> criarPropriedade(Map<String, dynamic> prorpiedade) async {
+  static Future<int> criarPropriedade(Map<String, dynamic> propriedade) async {
     final db = await DatabaseService.getDB();
-    return await db.insert('property', prorpiedade);
+    return await db.insert('property', propriedade);
   }
 
   static Future<List<Propriedade>> buscarPropriedadesDeUsuario(int user_id) async {
@@ -29,6 +29,17 @@ class Propriedadeservice {
       'property',
       where: 'id = ?',
       whereArgs: [propriedadeId],
+    );
+  }
+
+  /// Atualiza uma propriedade no banco de dados pelo ID
+  static Future<int> atualizarPropriedade(propriedade) async {
+    final db = await DatabaseService.getDB();
+    return await db.update(
+      'property',
+      Propriedade.fromPropriedadeToJson(propriedade),  // Dados novos
+      where: 'id = ?',
+      whereArgs: [propriedade.id],
     );
   }
 }
