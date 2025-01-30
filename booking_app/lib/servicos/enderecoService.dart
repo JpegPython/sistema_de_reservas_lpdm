@@ -17,6 +17,21 @@ class Enderecoservice {
     }
   }
 
+  static Future<Endereco?> buscarEnderecoPorId(int addressId) async {
+    final db = await DatabaseService.getDB();
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT * FROM address WHERE id = ?',
+      [addressId],
+    );
+
+    if (result.isNotEmpty) {
+      return Endereco.fromJsonToEndereco(result.first);
+    } else {
+      return null;
+    }
+  }
+
+
   static Future<Endereco> precisaSalvarEnderecoNoBanco(Endereco enderecoViaApi) async{
     Endereco? endereco = await Enderecoservice.buscarEndereco(enderecoViaApi.cep);
     
