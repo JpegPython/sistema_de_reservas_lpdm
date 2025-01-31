@@ -4,6 +4,7 @@ import 'package:booking_app_user/modelos/endereco.dart';
 import 'package:booking_app_user/modelos/propriedade.dart';
 import 'package:booking_app_user/modelos/usuario.dart';
 import 'package:booking_app_user/selecionarDate.dart';
+import 'package:booking_app_user/servicos/detalhesPropriedade.dart';
 import 'package:booking_app_user/servicos/enderecoService.dart';
 import 'package:booking_app_user/servicos/propriedadeService.dart';
 import 'package:file_picker/file_picker.dart';
@@ -132,9 +133,21 @@ class _HomeState extends State<Home> {
                 ],
               ),
               const SizedBox(height: 16.0),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetalhesPropriedade(propriedade: propriedade),
+                      ),
+                    );
+                  },
+                  child: Text("Detalhes"),
+                ),
+              ),
+              Center(
+                child: TextButton(
                   onPressed: () {
                     if (checkInDate == null || checkOutDate == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,7 +159,7 @@ class _HomeState extends State<Home> {
                     }
                     //TODO: lógica de criar a reserva do usuário
                   },
-                  child: const Text('Reservar'),
+                  child: Text("Reservar"),
                 ),
               ),
             ],
