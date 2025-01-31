@@ -14,7 +14,7 @@ class DatabaseService {
     var databaseFactory = databaseFactoryFfi;
     final io.Directory appDocumentsDir = await getApplicationDocumentsDirectory();
     final path = p.join(appDocumentsDir.path, "databases", _name);
-
+          
     //await databaseFactory.deleteDatabase(path);
     Database db = await databaseFactory.openDatabase(
         path,

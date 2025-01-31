@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(MaterialApp(
-    title: 'Sistema de Reservas admin',
+    title: 'Sistema de Reservas Usuário',
     debugShowCheckedModeBanner: false,
     home: Login(),
   ));
