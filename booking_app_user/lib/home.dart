@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:booking_app_user/modelos/propriedade.dart';
 import 'package:booking_app_user/modelos/usuario.dart';
+import 'package:booking_app_user/selecionarDate.dart';
+import 'package:booking_app_user/servicos/propriedadeService.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +16,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Propriedade> propriedades = [];
+  List<Propriedade> propriedadesDisponiveis = [];
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController numberController = TextEditingController();
@@ -23,19 +25,28 @@ class _HomeState extends State<Home> {
   TextEditingController maxguestController = TextEditingController();
   TextEditingController cepController = TextEditingController();
   File? _image;
+  DateTime? checkInDate;
+  DateTime? checkOutDate;
 
-  Card criarCard(Propriedade propriedade) {
+  Widget criarCard(Propriedade propriedade, dynamic context){
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.network(
-            propriedade.thumbnail,
-            width: 150,
-            height: 150.0,
-            fit: BoxFit.cover,
+          propriedade.thumbnail.startsWith('http')
+                    ? Image.network(
+                  propriedade.thumbnail,
+                  width: double.infinity,
+                  height: 150.0,
+                  fit: BoxFit.cover,
+                )
+                    : Image.file(
+                  File(propriedade.thumbnail),
+                  width: double.infinity,
+                  height: 150.0,
+                  fit: BoxFit.cover,
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -85,11 +96,69 @@ class _HomeState extends State<Home> {
                   ],
                 ),
               ],
+              
             ),
           ),
+          const SizedBox(height: 16.0),
+                // Seção de seleção de datas
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => { 
+                        selecionarData(true)
+                        },
+                      child: Text(checkInDate == null
+                          ? 'Check-in'
+                          : 'Entrada: ${checkInDate!.day}/${checkInDate!.month}/${checkInDate!.year}'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => {
+                        selecionarData(false)
+                      },
+                      child: Text(checkOutDate == null
+                          ? 'Check-out'
+                          : 'Saída: ${checkOutDate!.day}/${checkOutDate!.month}/${checkOutDate!.year}'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                // Botão de reserva
+              SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (checkInDate == null || checkOutDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Selecione as datas antes de reservar.'),
+                      ),
+                    );
+                    return;
+                  }
+                  //TODO: logica de criar a reserva do usuario
+                 
+                },
+                child: const Text('Reservar'), 
+              ),
+            ),
         ],
+        
       ),
     );
+  } 
+
+  void selecionarData(bool isCheckInDate) async{
+    DateTime? dataSelecionada = await Selecionardate.selecionarData(context);
+    if(dataSelecionada != null ){
+      isCheckInDate == true ? checkInDate = dataSelecionada : checkOutDate = dataSelecionada;
+      if(!Selecionardate.validaDataSelecionada(isCheckInDate, checkInDate, checkOutDate)){
+          isCheckInDate == true ? checkInDate = null : checkOutDate = null;
+      } 
+    }
+    setState(() {
+      
+    });
   }
 
   Future<void> pickImage() async {
@@ -107,6 +176,11 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+      Propriedadeservice.buscarTodasPropriedadesDisponiveis().then((p) {
+        propriedadesDisponiveis = p;
+        setState(() {
+        });
+    });
   }
 
   @override
@@ -116,7 +190,7 @@ class _HomeState extends State<Home> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Propriedades'),
+            const Text('Propriedades Disponíveis para a reserva'),
             PopupMenuButton<String>(
               icon: const CircleAvatar(
                 child: Icon(Icons.person),
@@ -157,9 +231,9 @@ class _HomeState extends State<Home> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: propriedades.length,
+              itemCount: propriedadesDisponiveis.length,
               itemBuilder: (context, index) {
-                return criarCard(propriedades[index]);
+                return criarCard(propriedadesDisponiveis[index], context);
               },
             ),
           ),
