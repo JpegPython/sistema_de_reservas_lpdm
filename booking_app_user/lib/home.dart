@@ -190,7 +190,7 @@ class _HomeState extends State<Home> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Propriedades Disponíveis para a reserva'),
+            const Text('Propriedades Disponíveis'),
             PopupMenuButton<String>(
               icon: const CircleAvatar(
                 child: Icon(Icons.person),
