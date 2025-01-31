@@ -404,10 +404,6 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                 itemBuilder: (BuildContext context) {
                   return <PopupMenuEntry<String>>[
                     const PopupMenuItem<String>(
-                      value: 'minhas_propriedades',
-                      child: Text('Minhas Propriedades'),
-                    ),
-                    const PopupMenuItem<String>(
                       value: 'deslogar',
                       child: Text('Deslogar'),
                     ),
