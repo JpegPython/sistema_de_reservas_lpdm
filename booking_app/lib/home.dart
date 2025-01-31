@@ -12,6 +12,7 @@ import 'package:booking_app/servicos/imagemService.dart';
 import 'package:booking_app/servicos/propriedadeService.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Home extends StatefulWidget {
   Usuario usuario;
@@ -30,7 +31,6 @@ class _HomeState extends State<Home> {
   TextEditingController priceController = TextEditingController();
   TextEditingController maxguestController = TextEditingController();
   TextEditingController cepController = TextEditingController();
-  File? _image;
   List<File>? _images;
 
   Widget criarCard(Propriedade propriedade, int index) {
@@ -46,7 +46,6 @@ class _HomeState extends State<Home> {
           key: Key(propriedade.id.toString()),
           onDismissed: (direction) async {
             if (direction == DismissDirection.startToEnd) {
-              // TODO: Editar
               setState(() {
 
               });
@@ -121,33 +120,42 @@ class _HomeState extends State<Home> {
     );
 
     if (result != null) {
-      _images = result.files.map((file) => File(file.path!)).toList();
-      _image = _images!.first;
+      setState(() {
+        _images = result.files.map((file) => File(file.path!)).toList();
+      });
     }
   }
-  
+
+void limpaFormulario() {
+  titleController.clear();
+  descriptionController.clear();
+  priceController.clear();
+  maxguestController.clear();
+  numberController.clear();
+  complementController.clear();
+  cepController.clear();
+  _images = null;
+}
+
 _salvarPropriedade() async {
   Endereco enderecoViaApi = await Cepservice.buscarCep(cepController.text);
   //Verifica se precisa salvar no banco de dados ou já está lá
   Endereco enderecoBancoDeDados = await Enderecoservice.precisaSalvarEnderecoNoBanco(enderecoViaApi);
 
   //Cria a propriedade e salva no banco de dados
-  Propriedade propriedade = Propriedade(address_id: enderecoBancoDeDados.id!, user_id: widget.usuario.id!, title: titleController.text, description: descriptionController.text, price: double.parse(priceController.text), 
-                max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _image!.path);
+  Propriedade propriedade = Propriedade(address_id: enderecoBancoDeDados.id!, user_id: widget.usuario.id!, title: titleController.text, description: descriptionController.text, price: double.parse(priceController.text),
+                max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _images![0].path);
   propriedade.id = await Propriedadeservice.criarPropriedade(Propriedade.fromPropriedadeToJson(propriedade));
-  
+
   //Cria a imagem e salva no banco de dados
   _images?.forEach((image) {
     Imagem imagem = Imagem(path: image.path, property_id: propriedade.id!);
     Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
   });
 
+  limpaFormulario();
   setState(() {
     propriedades.add(propriedade);
-    _limparCampos();
-  });
-}
-  _limparCampos(){
     titleController.clear();
     descriptionController.clear();
     priceController.clear();
@@ -156,7 +164,8 @@ _salvarPropriedade() async {
     complementController.clear();
     cepController.clear();
     _image = null;
-  }
+  });
+}
 
   _atualizarPropriedade(index) async {
     Endereco enderecoViaApi = await Cepservice.buscarCep(cepController.text);
@@ -165,25 +174,32 @@ _salvarPropriedade() async {
 
     //Cria a propriedade e salva no banco de dados
     Propriedade propriedade = Propriedade(id: propriedades[index].id, address_id: enderecoBancoDeDados.id!, user_id: widget.usuario.id!, title: titleController.text, description: descriptionController.text, price: double.parse(priceController.text),
-        max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _image!.path);
+        max_guest: int.parse(maxguestController.text), number: int.parse(numberController.text) , complement: complementController.text, thumbnail: _images![0].path);
     await Propriedadeservice.atualizarPropriedade(propriedade);
 
-    //TODO: Rever isso das imagens no atualizar
     await Imagemservice.apagarImagens(propriedade.id!);
     _images?.forEach((image) {
       Imagem imagem = Imagem(path: image.path, property_id: propriedade.id!);
       Imagemservice.criarImagem(Imagem.fromImageToJson(imagem));
     });
 
+    limpaFormulario();
     setState(() {
       propriedades[index] = propriedade;
-      _limparCampos();
+      titleController.clear();
+      descriptionController.clear();
+      priceController.clear();
+      maxguestController.clear();
+      numberController.clear();
+      complementController.clear();
+      cepController.clear();
+      _image = null;
     });
   }
 
 void salvarOuAtualizarModal(int operation, {int index = -1}) {
   String operationStr = "Adicionar";
-  
+
   if (operation == 1) {
     operationStr = "Atualizar";
     titleController.text = propriedades[index].title;
@@ -192,7 +208,6 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
     maxguestController.text = propriedades[index].max_guest.toString();
     numberController.text = propriedades[index].number.toString();
     complementController.text = propriedades[index].complement;
-    _image = File(propriedades[index].thumbnail);
   }
 
   showDialog(
@@ -240,14 +255,25 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                     decoration: InputDecoration(labelText: "Cep"),
                   ),
                   const SizedBox(height: 16),
-                  _image == null
+
+                  // Exibir todas as imagens selecionadas
+                  _images == null || _images!.isEmpty
                       ? Text("Nenhuma imagem selecionada")
-                      : Image.file(_image!, height: 100),
+                      : Wrap(
+                    spacing: 8.0, // Espaçamento horizontal
+                    runSpacing: 8.0, // Espaçamento vertical
+                    children: _images!.map((image) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(image, height: 80, width: 80, fit: BoxFit.cover),
+                      );
+                    }).toList(),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
                       await pickImages();
-                      setState(() {}); // Reconstruir o conteúdo do AlertDialog
+                      setState(() {}); // Atualiza o modal para refletir as mudanças
                     },
                     child: Text("Anexar Imagens"),
                   ),
@@ -257,19 +283,31 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
             actions: [
               TextButton(
                 onPressed: () {
+                  limpaFormulario();
                   Navigator.pop(context);
                 },
                 child: Text("Cancelar"),
               ),
               TextButton(
                 onPressed: () {
-                  if (operation == 0) {
-                    _salvarPropriedade();
-                  } else if (operation == 1) {
-                    _atualizarPropriedade(index);
-                  }
+                  if (titleController.text.isEmpty ||
+                      descriptionController.text.isEmpty ||
+                      priceController.text.isEmpty ||
+                      maxguestController.text.isEmpty ||
+                      numberController.text.isEmpty ||
+                      complementController.text.isEmpty ||
+                      cepController.text.isEmpty ||
+                      (_images == null || _images!.isEmpty)) {
+                    Fluttertoast.showToast(msg: "Todos os campos são obrigatórios!");
+                  } else {
+                    if (operation == 0) {
+                      _salvarPropriedade();
+                    } else if (operation == 1) {
+                      _atualizarPropriedade(index);
+                    }
 
-                  Navigator.pop(context);
+                    Navigator.pop(context);
+                  }
                 },
                 child: Text(operationStr),
               ),
@@ -279,7 +317,7 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
       );
     },
   );
-  }
+}
 
   @override
   void initState() {
@@ -311,10 +349,6 @@ void salvarOuAtualizarModal(int operation, {int index = -1}) {
                 },
                 itemBuilder: (BuildContext context) {
                   return <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'minhas_propriedades',
-                      child: Text('Minhas Propriedades'),
-                    ),
                     const PopupMenuItem<String>(
                       value: 'deslogar',
                       child: Text('Deslogar'),
