@@ -156,14 +156,6 @@ _salvarPropriedade() async {
   limpaFormulario();
   setState(() {
     propriedades.add(propriedade);
-    titleController.clear();
-    descriptionController.clear();
-    priceController.clear();
-    maxguestController.clear();
-    numberController.clear();
-    complementController.clear();
-    cepController.clear();
-    _image = null;
   });
 }
 
@@ -186,14 +178,6 @@ _salvarPropriedade() async {
     limpaFormulario();
     setState(() {
       propriedades[index] = propriedade;
-      titleController.clear();
-      descriptionController.clear();
-      priceController.clear();
-      maxguestController.clear();
-      numberController.clear();
-      complementController.clear();
-      cepController.clear();
-      _image = null;
     });
   }
 
