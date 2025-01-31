@@ -62,6 +62,8 @@ class _LoginState extends State<Login> {
                     _senhaController.text,
                   );
                   if (usuario != null) {
+                    _usuarioController.clear();
+                    _senhaController.clear();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
