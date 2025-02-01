@@ -1,42 +1,43 @@
 import 'package:booking_app_user/servicos/reservaService.dart';
 import 'package:flutter/material.dart';
 
-class Selecionardate {
-
+class SelecionarDate {
+  
   static Future<DateTime?> selecionarData(BuildContext context) async {
-    DateTime? dataSelecionada = await showDatePicker(
+    return await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)), // Até 1 ano no futuro
     );
+  }
 
-    if (dataSelecionada != null) {
-        return dataSelecionada;
-      }
-    }
-  static bool validaDataSelecionada(bool isCheckInDate, DateTime? checkIn, DateTime? checkout){
-     if(isCheckInDate && checkout != null && Selecionardate.dataCheckInMaiorDataCheckOut(checkIn, checkout)) {
+  static bool validaDataSelecionada(bool isCheckInDate, DateTime? checkIn, DateTime? checkout) {
+    if (isCheckInDate && checkout != null && dataCheckInMaiorDataCheckOut(checkIn, checkout)) {
       return false;
     }
-    if( !isCheckInDate && checkIn != null && Selecionardate.dataCheckOutMenorDataCheckIn(checkIn, checkout)) {
+    if (!isCheckInDate && checkIn != null && checkout != null && dataCheckOutMenorDataCheckIn(checkIn, checkout)) {
       return false;
     }
     return true;
   }
-  static bool dataCheckInMaiorDataCheckOut(DateTime? checkin, DateTime? checkout){
-    return checkin!.isAfter(checkout!);
+
+  static bool dataCheckInMaiorDataCheckOut(DateTime? checkin, DateTime? checkout) {
+    if (checkin == null || checkout == null) return false;
+    return checkin.isAfter(checkout);
   }
 
-  static bool dataCheckOutMenorDataCheckIn(DateTime? checkin, DateTime? checkout){
-    return checkout!.isBefore(checkin!);
+  static bool dataCheckOutMenorDataCheckIn(DateTime? checkin, DateTime? checkout) {
+    if (checkin == null || checkout == null) return false;
+    return checkout.isBefore(checkin);
   }
 
-  static Future<bool> verificarConflitoComReserva( DateTime? checkin, DateTime? checkout, int property_id) async{
-    if(checkin != null && checkout != null){
+  static Future<bool> verificarConflitoComReserva(DateTime? checkin, DateTime? checkout, int property_id) async {
+    if (checkin != null && checkout != null) {
       return await ReservaService.verificarConflitoDataEntreReservas(property_id, checkin.toString(), checkout.toString());
     }
     return false;
   }
-  }
+}
+
  

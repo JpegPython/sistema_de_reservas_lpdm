@@ -31,13 +31,13 @@ class _CardReservasDisponiveisState extends State<CardReservasDisponiveis> imple
   }
 
   void selecionarData(bool isCheckInDate, int property_id) async{
-  DateTime? dataSelecionada = await Selecionardate.selecionarData(context);
+  DateTime? dataSelecionada = await SelecionarDate.selecionarData(context);
   if(dataSelecionada != null ){
     isCheckInDate == true ? checkInDate = dataSelecionada : checkOutDate = dataSelecionada;
-    if(!Selecionardate.validaDataSelecionada(isCheckInDate, checkInDate, checkOutDate)){
+    if(!SelecionarDate.validaDataSelecionada(isCheckInDate, checkInDate, checkOutDate)){
         isCheckInDate == true ? checkInDate = null : checkOutDate = null;
     } 
-    if(!await Selecionardate.verificarConflitoComReserva(checkInDate, checkOutDate, property_id)){
+    if(!await SelecionarDate.verificarConflitoComReserva(checkInDate, checkOutDate, property_id)){
         conflitoDatasReserva = true;
       }else {
         conflitoDatasReserva = false;

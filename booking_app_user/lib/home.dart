@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:booking_app_user/componentes/cardReservasDisponiveis.dart';
 import 'package:booking_app_user/componentes/minhasReservas.dart';
 import 'package:booking_app_user/modelos/propriedade.dart';
 import 'package:booking_app_user/modelos/usuario.dart';
 import 'package:booking_app_user/servicos/propriedadeService.dart';
-import 'package:flutter/material.dart';
+import 'package:booking_app_user/utils/selecionarDate.dart';
 
 class Home extends StatefulWidget {
-  Usuario usuario;
+  final Usuario usuario;
   Home({required this.usuario});
 
   @override
@@ -15,16 +16,54 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<Propriedade> propriedadesDisponiveis = [];
-  
+  DateTime? checkInDate;
+  DateTime? checkOutDate;
+
   @override
   void initState() {
     super.initState();
-      Propriedadeservice.buscarTodasPropriedadesComMaiorRating().then((p) {
-        propriedadesDisponiveis = p;
-        setState(() {
-        });
+    carregarPropriedades();
+  }
+
+  void carregarPropriedades() async {
+    var propriedades = await Propriedadeservice.buscarTodasPropriedadesComMaiorRating();
+    setState(() {
+      propriedadesDisponiveis = propriedades;
     });
   }
+
+  void selecionarData(bool isCheckInDate) async {
+    DateTime? dataSelecionada = await SelecionarDate.selecionarData(context);
+    if (dataSelecionada != null) {
+      setState(() {
+        isCheckInDate ? checkInDate = dataSelecionada : checkOutDate = dataSelecionada;
+      });
+    }
+  }
+
+  void filtrarPropriedades() async {
+    if (checkInDate == null || checkOutDate == null) return;
+    try{
+      var propriedadesFiltradas = await Propriedadeservice.buscarPropriedadesDisponiveis(checkInDate!, checkOutDate!);
+      setState(() {
+        propriedadesDisponiveis = propriedadesFiltradas;
+      });
+    }
+  catch (e) {
+    // Resetando os filtros para o estado inicial
+    setState(() {
+      checkInDate = null;
+      checkOutDate = null;
+      propriedadesDisponiveis = [];
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -39,33 +78,24 @@ class _HomeState extends State<Home> {
                 child: Icon(Icons.person),
               ),
               onSelected: (String result) {
-                if (result != 'minhas_propriedades') {
-                  Navigator.pop(context);
-                }
-                if(result == 'minhas_propriedades'){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Minhasreservas(usuario: widget.usuario),
-                      ),
-                    );
+                if (result == 'minhas_reservas') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Minhasreservas(usuario: widget.usuario),
+                    ),
+                  );
                 }
               },
               itemBuilder: (BuildContext context) {
                 if (widget.usuario.id != -1) {
-                  // Usuário está logado
                   return <PopupMenuEntry<String>>[
                     const PopupMenuItem<String>(
-                      value: 'minhas_propriedades',
-                      child: Text('Minhas Propriedades'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'deslogar',
-                      child: Text('Deslogar'),
+                      value: 'minhas_reservas',
+                      child: Text('Minhas Reservas'),
                     ),
                   ];
                 } else {
-                  // Usuário não está logado
                   return <PopupMenuEntry<String>>[
                     const PopupMenuItem<String>(
                       value: 'login',
@@ -80,11 +110,31 @@ class _HomeState extends State<Home> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () => selecionarData(true),
+                  child: Text(checkInDate == null ? 'Check-in' : 'Entrada: ${checkInDate!.day}/${checkInDate!.month}/${checkInDate!.year}'),
+                ),
+                ElevatedButton(
+                  onPressed: () => selecionarData(false),
+                  child: Text(checkOutDate == null ? 'Check-out' : 'Saída: ${checkOutDate!.day}/${checkOutDate!.month}/${checkOutDate!.year}'),
+                ),
+                ElevatedButton(
+                  onPressed: filtrarPropriedades,
+                  child: const Text('Filtrar'),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: propriedadesDisponiveis.length,
               itemBuilder: (context, index) {
-                return CardReservasDisponiveis(usuario: widget.usuario, propriedade: propriedadesDisponiveis[index],);
+                return CardReservasDisponiveis(usuario: widget.usuario, propriedade: propriedadesDisponiveis[index]);
               },
             ),
           ),
@@ -93,3 +143,4 @@ class _HomeState extends State<Home> {
     );
   }
 }
+
