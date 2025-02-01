@@ -4,7 +4,6 @@ import 'package:booking_app_user/modelos/image.dart';
 import 'package:booking_app_user/servicos/dataBase.dart';
 
 class Imagemservice {
-
   /// Insere uma nova imagem no banco de dados
   static Future<void> criarImagem(Map<String, dynamic> imagem) async {
     final db = await DatabaseService.getDB();
@@ -21,7 +20,8 @@ class Imagemservice {
     );
   }
 
-  static Future<List<File>> pegarImagensPeloIdPropriedade(int idPropriedade) async {
+  static Future<List<File>> pegarImagensPeloIdPropriedade(
+      int idPropriedade) async {
     final db = await DatabaseService.getDB();
 
     // Consulta as imagens no banco de dados
@@ -32,10 +32,12 @@ class Imagemservice {
     );
 
     // Converte os dados JSON em objetos Imagem
-    final List<Imagem> imagens = imagensJson.map((json) => Imagem.fromJsonToImage(json)).toList();
+    final List<Imagem> imagens =
+        imagensJson.map((json) => Imagem.fromJsonToImage(json)).toList();
 
     // Converte os objetos Imagem em uma lista de File
-    final List<File> arquivosDeImagem = imagens.map((imagem) => File(imagem.path)).toList();
+    final List<File> arquivosDeImagem =
+        imagens.map((imagem) => File(imagem.path)).toList();
 
     return arquivosDeImagem;
   }

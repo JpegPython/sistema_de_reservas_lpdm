@@ -1,14 +1,12 @@
-
 import 'package:booking_app_user/modelos/endereco.dart';
 import 'package:booking_app_user/servicos/dataBase.dart';
 
 class Enderecoservice {
-
-  static Future<Endereco?> buscarEndereco(String cep) async{
+  static Future<Endereco?> buscarEndereco(String cep) async {
     final db = await DatabaseService.getDB();
-     final List<Map<String, dynamic>> result = await db.rawQuery(
+    final List<Map<String, dynamic>> result = await db.rawQuery(
       'SELECT * FROM address WHERE cep = ?',
-      [cep], 
+      [cep],
     );
 
     if (result.isNotEmpty) {
@@ -32,11 +30,12 @@ class Enderecoservice {
     }
   }
 
+  static Future<Endereco> precisaSalvarEnderecoNoBanco(
+      Endereco enderecoViaApi) async {
+    Endereco? endereco =
+        await Enderecoservice.buscarEndereco(enderecoViaApi.cep);
 
-  static Future<Endereco> precisaSalvarEnderecoNoBanco(Endereco enderecoViaApi) async{
-    Endereco? endereco = await Enderecoservice.buscarEndereco(enderecoViaApi.cep);
-    
-    if(endereco == null){
+    if (endereco == null) {
       criarEndereco(Endereco.fromEnderecoToJson(enderecoViaApi));
       return enderecoViaApi;
     }
@@ -45,6 +44,6 @@ class Enderecoservice {
 
   static void criarEndereco(Map<String, dynamic> endereco) async {
     final db = await DatabaseService.getDB();
-     await db.insert('address', endereco);
+    await db.insert('address', endereco);
   }
 }

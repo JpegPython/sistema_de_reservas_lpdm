@@ -1,3 +1,4 @@
+import 'package:booking_app_user/servicos/reservaService.dart';
 import 'package:flutter/material.dart';
 
 class Selecionardate {
@@ -24,13 +25,18 @@ class Selecionardate {
     return true;
   }
   static bool dataCheckInMaiorDataCheckOut(DateTime? checkin, DateTime? checkout){
-    print(checkin);
-    print(checkout);
     return checkin!.isAfter(checkout!);
   }
 
   static bool dataCheckOutMenorDataCheckIn(DateTime? checkin, DateTime? checkout){
     return checkout!.isBefore(checkin!);
+  }
+
+  static Future<bool> verificarConflitoComReserva( DateTime? checkin, DateTime? checkout, int property_id) async{
+    if(checkin != null && checkout != null){
+      return await ReservaService.verificarConflitoDataEntreReservas(property_id, checkin.toString(), checkout.toString());
+    }
+    return false;
   }
   }
  

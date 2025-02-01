@@ -1,12 +1,19 @@
 import 'dart:io';
+import 'package:booking_app_user/home.dart';
 import 'package:booking_app_user/modelos/propriedade.dart';
+import 'package:booking_app_user/modelos/reserva.dart';
+import 'package:booking_app_user/modelos/usuario.dart';
 import 'package:booking_app_user/servicos/imagemService.dart'; // Importe o serviço de imagem
+import 'package:booking_app_user/servicos/reservaService.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart'; // Importe o pacote carousel_slider
 
 class DetalhesPropriedade extends StatefulWidget {
   final Propriedade propriedade;
-  const DetalhesPropriedade({super.key, required this.propriedade});
+  final Usuario usuario;
+  final DateTime checkin;
+  final DateTime checkout;
+  const DetalhesPropriedade({super.key, required this.propriedade, required this.usuario, required this.checkin, required this.checkout});
 
   @override
   State<DetalhesPropriedade> createState() => _DetalhesPropriedadeState();
@@ -108,6 +115,29 @@ class _DetalhesPropriedadeState extends State<DetalhesPropriedade> {
             _buildDetalheItem('Complemento', widget.propriedade.complement),
             _buildDetalheItem('Preço', widget.propriedade.price.toString()),
             _buildDetalheItem('Máx. Hóspedes', widget.propriedade.max_guest.toString()),
+             Center(
+                child: TextButton(
+                  onPressed: () {
+                    int dias = widget.checkout.difference(widget.checkin).inDays;
+                    double preco = widget.propriedade.price * dias;
+                    Reserva reserva = Reserva(user_id: widget.usuario.id!, property_id: widget.propriedade.id!, checkin_date: widget.checkin, checkout_date: widget.checkout,
+                                 total_days: dias, total_price: preco, rating: 4.5, amount_guest: widget.propriedade.max_guest);
+                    ReservaService.criarReserva(Reserva.fromReservaToJson(reserva));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Propriedade reservada com sucesso.'),
+                            ),
+                          );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Home(usuario: widget.usuario),
+                      ),
+                    );
+                  },
+                  child: Text("Reservar"),
+                ),
+              ),
           ],
         ),
       ),

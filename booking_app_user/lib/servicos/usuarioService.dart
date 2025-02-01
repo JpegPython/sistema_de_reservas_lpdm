@@ -11,7 +11,7 @@ class Usuarioservice {
     final db = await DatabaseService.getDB();
     final List<Map<String, dynamic>> result = await db.rawQuery(
       'SELECT * FROM user WHERE name = ? AND password = ?',
-      [username, senha], // Use parâmetros para evitar SQL Injection
+      [username, senha], 
     );
 
     if (result.isNotEmpty) {

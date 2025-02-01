@@ -5,7 +5,7 @@ import 'package:booking_app/modelos/propriedade.dart';
 import 'package:flutter/material.dart';
 
 class Criarcard {
-  static Widget criarCard(Propriedade propriedade, Endereco endereco){
+  static Widget criarCardWidget(Propriedade propriedade, Endereco endereco){
        return Card(
             elevation: 4.0,
             margin: const EdgeInsets.all(8.0),

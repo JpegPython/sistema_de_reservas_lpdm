@@ -107,7 +107,7 @@ class _HomeState extends State<Home> {
             alignment: Alignment.centerRight,
             child: Icon(Icons.delete, color: Colors.white, size: 37),
           ),
-          child: Criarcard.criarCard(propriedade, endereco)
+          child: Criarcard.criarCardWidget(propriedade, endereco)
         );
       },
     );
