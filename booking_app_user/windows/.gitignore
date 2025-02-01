@@ -1,4 +1,6 @@
 flutter/ephemeral/
+/booking_app_user/windows
+/booking_app_user/test
 
 # Visual Studio user-specific files.
 *.suo
