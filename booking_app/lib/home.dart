@@ -10,6 +10,7 @@ import 'package:booking_app/servicos/cepService.dart';
 import 'package:booking_app/servicos/enderecoService.dart';
 import 'package:booking_app/servicos/imagemService.dart';
 import 'package:booking_app/servicos/propriedadeService.dart';
+import 'package:booking_app/servicos/reservaService.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -82,6 +83,7 @@ class _HomeState extends State<Home> {
 
               Timer(Duration(seconds: 5), () {
                 if (!isUndone) {
+                  Reservaservice.deletarReservasAssociadaPropriedade(lastRemoved.id!);
                   Propriedadeservice.deletarPropriedade(lastRemoved.id!).then((_) {
                     Propriedadeservice.buscarPropriedadesDeUsuario(widget.usuario.id!).then((p) {
                       setState(() {
@@ -107,7 +109,7 @@ class _HomeState extends State<Home> {
             alignment: Alignment.centerRight,
             child: Icon(Icons.delete, color: Colors.white, size: 37),
           ),
-          child: Criarcard.criarCardWidget(propriedade, endereco)
+          child: CriarCardWidget.criarCardWidget(propriedade, endereco)
         );
       },
     );
